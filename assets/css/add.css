@@ -1,0 +1,50 @@
+textarea{
+    width:100%;
+    padding:12px 4px;
+    margin-bottom:22px;
+    border:none;
+    border-bottom:1px solid var(--borda);
+    border-radius:0;
+    font-size:15px;
+    color:var(--azul-marinho);
+    background:transparent;
+    resize:vertical;
+    min-height:120px;
+    transition:border-color .2s ease;
+}
+
+textarea::placeholder{
+    color:#b0b8c4;
+}
+
+textarea:focus{
+    outline:none;
+    border-bottom:2px solid var(--azul-marinho);
+}
+
+input[type="file"]{
+    width:100%;
+    padding:12px 0;
+    margin-bottom:22px;
+    border:none;
+    color:var(--cinza);
+    background:transparent;
+    cursor:pointer;
+}
+
+input[type="file"]::file-selector-button{
+    padding:10px 18px;
+    border:1px solid var(--azul-marinho);
+    background:#ffffff;
+    color:var(--azul-marinho);
+    cursor:pointer;
+    font-weight:600;
+    margin-right:15px;
+    transition:.2s;
+}
+
+input[type="file"]::file-selector-button:hover{
+    background:var(--azul-marinho);
+    color:#ffffff;
+    
+}
