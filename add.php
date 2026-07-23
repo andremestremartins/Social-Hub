@@ -28,10 +28,7 @@ require_once "config/session.php";
                     placeholder="No que estás a pensar?"
                     required></textarea>
 
-                <input
-                    type="file"
-                    name="image"
-                    accept="image/*">
+                
 
                 <button type="submit">
 

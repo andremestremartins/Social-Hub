@@ -81,7 +81,7 @@ $query = mysqli_query($conn, $sql);
                                         <?php echo $publicacoes["created_at"]; ?>
 
                                     </div>
-
+                                
                                 </div>
 
                             </div>

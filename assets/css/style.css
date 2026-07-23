@@ -18,46 +18,80 @@ body {
     height: 100vh;
 }
 header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-bottom: 1px solid var(--borda);
+    padding: 14px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    .logo {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--azul-marinho);
+        letter-spacing: .5px;
+    }
+
+    nav {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        background: #fff;
-        border-bottom: 1px solid var(--borda);
-        padding: 14px 40px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        gap: 28px;
 
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--azul-marinho);
-            letter-spacing: .5px;
+        a {
+            text-decoration: none;
+            font-size: 14px;
+            color: var(--cinza);
+            font-weight: 500;
+
+            &:hover {
+                color: var(--azul-marinho);
+            }
         }
 
-        nav {
+        form {
             display: flex;
-            gap: 28px;
+            align-items: center;
+            margin-left: 30px;
+        }
 
-            a {
-                text-decoration: none;
-                font-size: 14px;
-                color: var(--cinza);
-                font-weight: 500;
-                transition: color .2s;
+        input {
+            width: 220px;
+            padding: 10px 4px;
+            border: none;
+            border-bottom: 1px solid var(--borda);
+            background: transparent;
+            font-size: 15px;
+            color: var(--azul-marinho);
 
-                &:hover {
-                    color: var(--azul-marinho);
-                }
+            &:focus {
+                outline: none;
+                border-bottom: 2px solid var(--azul-marinho);
+            }
+        }
+
+        button {
+            background: none;
+            border: none;
+            padding-left: 10px;
+            cursor: pointer;
+
+            img {
+                width: 20px;
+                height: 20px;
             }
         }
     }
+}
+
 .home {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 
-    
+
 
     .homecontainer {
         display: flex;

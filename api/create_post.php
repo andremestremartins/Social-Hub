@@ -11,42 +11,15 @@ if (!isset($_SESSION["user_id"])) {
 $user_id = $_SESSION["user_id"]; 
 $content = trim($_POST["content"]);
 
-$image = NULL;
+$sql = "INSERT INTO posts(user_id, content) VALUES (?, ?)";
 
-if(isset($_FILES["image"]) && $_FILES["image"]["error"] == 0){
+$stmt = mysqli_prepare($conn, $sql);
 
-    $extensao = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
+mysqli_stmt_bind_param($stmt, "is", $user_id, $content);
 
-    $permitidas = ["jpg","jpeg","png","webp"];
-
-    if(in_array($extensao,$permitidas)){
-
-        $nomeImagem = uniqid() . "." . $extensao;
-
-        $destino = "../uploads/posts/" . $nomeImagem;
-
-        move_uploaded_file($_FILES["image"]["tmp_name"], $destino);
-
-        $image = "uploads/posts/" . $nomeImagem;
-
-    }
-
-}
-
-$sql = "INSERT INTO posts(user_id,content,image)
-VALUES(?,?,?)";
-
-$stmt = mysqli_prepare($conn,$sql);
-
-mysqli_stmt_bind_param($stmt,"iss",$user_id,$content,$image);
-
-if(mysqli_stmt_execute($stmt)){
-
-    header("Location: ../index.php");
+if (mysqli_stmt_execute($stmt)) {
+    header("Location: ../profile.php?id=" . $user_id);
     exit();
-
-}else{
-
+} else {
     echo "Erro ao publicar.";
-
 }

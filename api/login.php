@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 require_once "../config/database.php";
 require_once "../config/session.php";
@@ -22,6 +22,7 @@ if (mysqli_num_rows($result) == 1) {
 
         $_SESSION["user_id"] = $user["id"];
         $_SESSION["username"] = $user["username"];
+        $_SESSION["nome"] = $user["nome"];
         
         header("Location: ../index.php");
         exit();

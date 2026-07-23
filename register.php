@@ -42,6 +42,13 @@ if (isset($_SESSION["user_id"])) {
             >
 
             <input
+                type="text"
+                name="nome"
+                placeholder="Nome completo"
+                required
+            >
+
+            <input
                 type="email"
                 name="email"
                 placeholder="Email"
@@ -52,13 +59,6 @@ if (isset($_SESSION["user_id"])) {
                 type="password"
                 name="password"
                 placeholder="Password"
-                required
-            >
-
-            <input
-                type="password"
-                name="confirm_password"
-                placeholder="Confirmar Password"
                 required
             >
 

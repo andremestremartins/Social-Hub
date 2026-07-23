@@ -12,10 +12,15 @@
             <nav>
                 <a href="add.php" class="add">+</a>
                 <a href="index.php">Home</a>
-                <a href="profile.php">Profile</a>
+                <a href="profile.php?id=<?php echo $_SESSION['user_id']; ?>">Profile</a>
                 <a href="chat.php">Chat</a>
-                <a href="settings.php">Settings</a>
                 <a href="logout.php">Terminar sessão</a>
+                <form action="api/pesquisar.php" method="post">
+                    <input type="text" placeholder="Pesquise..." name="pesquisa" required>
+
+                    <button type="submit"><img src="assets/images/search-interface-symbol.png" alt=""></button>
+
+                </form>
             </nav>
         </header>
 </body>

@@ -4,33 +4,43 @@ require_once "../config/database.php";
 require_once "../config/session.php";
 
 $username = trim($_POST["username"]);
+$nome = trim($_POST["nome"]);
 $email = trim($_POST["email"]);
 $password = $_POST["password"];
-$confirm = $_POST["confirm_password"];
 
-if ($password != $confirm) {
-    die("As passwords não coincidem.");
-}
 
-// Check if username already exists
-$check_username = mysqli_query($conn, "SELECT id FROM users WHERE username = '$username'");
+// Verificar se o username já existe
+$check_username = mysqli_query($conn, "SELECT id FROM users WHERE username='$username'");
+
 if (mysqli_num_rows($check_username) > 0) {
-    die("Este nome de utilizador já está em uso.");
+    die("Este nome de utilizador já existe.");
 }
 
-// Check if email already exists
-$check_email = mysqli_query($conn, "SELECT id FROM users WHERE email = '$email'");
+// Verificar se o email já existe
+$check_email = mysqli_query($conn, "SELECT id FROM users WHERE email='$email'");
+
 if (mysqli_num_rows($check_email) > 0) {
-    die("Este email já está a ser utilizado.");
+    die("Este email já está registado.");
 }
 
+// Encriptar a password
 $password = password_hash($password, PASSWORD_DEFAULT);
 
-$sql = "INSERT INTO users(username,email,password)
-VALUES('$username','$email','$password')";
+// Inserir utilizador
+$sql = "INSERT INTO users (username, nome, email, password)
+VALUES ('$username', '$nome', '$email', '$password')";
 
 if (mysqli_query($conn, $sql)) {
-    header("Location: ../login.php");
+
+    $_SESSION["user_id"] = mysqli_insert_id($conn);
+    $_SESSION["username"] = $username;
+    $_SESSION["nome"] = $nome;
+
+    header("Location: ../index.php");
+    exit();
+
 } else {
+
     echo "Erro ao criar a conta.";
+
 }
