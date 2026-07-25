@@ -11,13 +11,9 @@ if (!isset($_SESSION["user_id"])) {
 $user_id = $_SESSION["user_id"]; 
 $content = trim($_POST["content"]);
 
-$sql = "INSERT INTO posts(user_id, content) VALUES (?, ?)";
+$sql = "INSERT INTO posts(user_id, content) VALUES ('$user_id', '$content')";
 
-$stmt = mysqli_prepare($conn, $sql);
-
-mysqli_stmt_bind_param($stmt, "is", $user_id, $content);
-
-if (mysqli_stmt_execute($stmt)) {
+if (mysqli_query($conn, $sql)) {
     header("Location: ../profile.php?id=" . $user_id);
     exit();
 } else {

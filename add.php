@@ -2,20 +2,7 @@
 require_once "config/session.php";
 
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Conta</title>
-    <link rel="stylesheet" href="assets/css/add.css">
-    <link rel="stylesheet" href="assets/css/auth.css">
-
-</head>
-
-<body>
+<?php $pageTitle = "Criar Publicação"; require_once "includes/html.php"; ?>
 
     <div class="container">
         <div class="card">

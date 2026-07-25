@@ -9,6 +9,7 @@ if (!isset($_GET["id"])) {
 }
 
 $id = (int)$_GET["id"];
+$user_id = $_SESSION["user_id"];
 
 $sql = "SELECT * FROM users WHERE id='$id'";
 $query = mysqli_query($conn, $sql);
@@ -19,11 +20,34 @@ if (mysqli_num_rows($query) == 0) {
 
 $user = mysqli_fetch_assoc($query);
 
-$sqlPosts = "SELECT posts.*,
-    (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS total_likes
+$sqlPosts = "
+SELECT
+    posts.*,
+
+    COUNT(DISTINCT likes.id) AS total_likes,
+    COUNT(DISTINCT comments.id) AS total_comments,
+
+    EXISTS(
+        SELECT 1
+        FROM likes l2
+        WHERE l2.post_id = posts.id
+        AND l2.user_id = '$user_id'
+    ) AS liked
+
 FROM posts
-WHERE user_id='$id'
-ORDER BY created_at DESC";
+
+LEFT JOIN likes
+ON likes.post_id = posts.id
+
+LEFT JOIN comments
+ON comments.post_id = posts.id
+
+WHERE posts.user_id = '$id'
+
+GROUP BY posts.id
+
+ORDER BY posts.created_at DESC
+";
 
 $posts = mysqli_query($conn, $sqlPosts);
 
@@ -41,16 +65,12 @@ WHERE follower_id='$id'";
 
 $seguindo = mysqli_num_rows(mysqli_query($conn, $sqlSeguindo));
 
+if ($user_id != $id) {
 
-$segue = false;
-
-if ($_SESSION["user_id"] != $id) {
-
-    $userid = $_SESSION["user_id"];
-
-    $sql = "SELECT * FROM followers
-    WHERE follower_id='$userid'
-    AND following_id='$id'";
+    $sql = "SELECT *
+            FROM followers
+            WHERE follower_id='$user_id'
+            AND following_id='$id'";
 
     $resultado = mysqli_query($conn, $sql);
 
@@ -59,150 +79,76 @@ if ($_SESSION["user_id"] != $id) {
 
 $avatar = mb_strtoupper($user["username"], "UTF-8");
 ?>
+<?php $pageTitle = htmlspecialchars($user["username"]); require_once "includes/html.php"; ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php include "includes/header.php"; ?>
 
-<head>
+<div class="containerprofile">
 
-    <meta charset="UTF-8">
+    <div class="profileheader">
 
-    <title><?php echo htmlspecialchars($user["username"]); ?></title>
+        <div class="profileavatar">
 
-    <link rel="stylesheet" href="assets/css/perfil.css">
-</head>
+            <?php echo $avatar[0]; ?> 
 
-<body>
+        </div>
 
-    <?php include "includes/header.php"; ?>
+        <div class="profileinfo">
 
-    <div class="containerprofile">
+            <div class="profiletop">
 
-        <div class="profileheader">
+                <h2><?php echo htmlspecialchars($user["username"]); ?></h2>
 
-            <div class="profileavatar">
+                <?php if ($user_id == $id) { ?>
 
-                <?php echo $avatar[0]; ?>
-
-            </div>
-
-            <div class="profileinfo">
-
-                <div class="profiletop">
-
-                    <h2><?php echo htmlspecialchars($user["username"]); ?></h2>
-
-                    <?php if ($_SESSION["user_id"] == $id) { ?>
-
-                        <a href="edit_profile.php" class="editprofile">
-
-                            Editar Perfil
-
-                        </a>
-
-                    <?php } else { ?>
-
-                <?php if ($jaSegue) { ?>
-
-                    <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
-                        Deixar de seguir
+                    <a href="edit_profile.php" class="editprofile">
+                        Editar Perfil
                     </a>
 
                 <?php } else { ?>
 
-                    <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
-                        Seguir
-                    </a>
+                    <?php if ($jaSegue) { ?>
+
+                        <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
+                            Deixar de seguir
+                        </a>
+
+                    <?php } else { ?>
+
+                        <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
+                            Seguir
+                        </a>
+
+                    <?php } ?>
 
                 <?php } ?>
-
-            <?php } ?>
-
-                </div>
-
-                <p class="username">
-
-                    @<?php echo htmlspecialchars($user["username"]); ?>
-
-                </p>
-
-                <p class="bio">
-
-                    <?php echo htmlspecialchars($user["bio"] ?? ""); ?>
-
-                </p>
-
-                <div class="profilestats">
-
-                    <div>
-
-                        <span><?php echo $totalPosts; ?></span>
-
-                        <p>Publicações</p>
-
-                    </div>
-
-                    <div>
-
-                        <span><?php echo $seguidores; ?></span>
-
-                        <p>Seguidores</p>
-
-                    </div>
-
-                    <div>
-
-                        <span><?php echo $seguindo; ?></span>
-
-                        <p>A seguir</p>
-
-                    </div>
-
-                </div>
 
             </div>
 
-        </div>
+            <p class="username">
+                @<?php echo htmlspecialchars($user["username"]); ?>
+            </p>
 
-        <div class="profileposts">
+            <p class="bio">
+                <?php echo htmlspecialchars($user["bio"] ?? ""); ?>
+            </p>
 
-            <h3>Publicações</h3>
+            <div class="profilestats">
 
-            <div class="postsgrid">
-                <?php if ($totalPosts === 0) { ?>
-                    <div class="empty-posts">Ainda não há publicações.</div>
-                <?php } ?>
-                <?php while ($post = mysqli_fetch_assoc($posts)) { ?>
+                <div>
+                    <span><?php echo $totalPosts; ?></span>
+                    <p>Publicações</p>
+                </div>
 
-                    <div class="postcard">
+                <div>
+                    <span><?php echo $seguidores; ?></span>
+                    <p>Seguidores</p>
+                </div>
 
-                        <?php if (!empty($post["image"])) { ?>
-
-                            <img class="post-img" src="<?php echo htmlspecialchars($post["image"]); ?>" alt="Post">
-
-                        <?php } ?>
-
-                        <div class="post-body">
-
-                            <p><?php echo htmlspecialchars($post["content"]); ?></p>
-
-                            <div class="post-footer">
-
-                                <span class="post-time"><?php echo date("d/m/Y H:i", strtotime($post["created_at"])); ?></span>
-
-                                <span class="post-likes">
-
-                                    <span class="heart">&#9829;</span> <?php echo $post["total_likes"]; ?>
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                <?php } ?>
+                <div>
+                    <span><?php echo $seguindo; ?></span>
+                    <p>A seguir</p>
+                </div>
 
             </div>
 
@@ -210,6 +156,79 @@ $avatar = mb_strtoupper($user["username"], "UTF-8");
 
     </div>
 
+    <div class="profileposts">
+
+        <h3>Publicações</h3>
+
+        <div class="postsgrid">
+
+            <?php if ($totalPosts === 0) { ?>
+
+                <div class="empty-posts">
+                    Ainda não há publicações.
+                </div>
+
+            <?php } ?>
+
+            <?php while ($post = mysqli_fetch_assoc($posts)) { ?>
+
+
+                        <div class="postcard" onclick="window.location.href='post.php?id=<?php echo $post['id']; ?>'">
+
+                            <div class="post-body">
+
+                                <p><?php echo nl2br(htmlspecialchars($post["content"])); ?></p>
+
+                                <div class="post-footer">
+
+                                    <span class="post-time">
+                                        <?php echo date("d/m/Y H:i", strtotime($post["created_at"])); ?>
+                                    </span>
+
+                                    <a class="post-likes"
+                                    href="post.php?id=<?php echo $post['id']; ?>"
+                                    onclick="event.stopPropagation();">
+
+                                        <button type="button">
+
+                                            <i class="fa-solid fa-comment"></i>
+
+                                            <?php echo $post["total_comments"]; ?>
+
+                                        </button>
+
+                                    </a>
+
+                                    <a class="post-likes"
+                                    href="api/like.php?id=<?php echo $post["id"]; ?>"
+                                    onclick="event.stopPropagation();">
+
+                                        <button
+                                            type="button"
+                                            class="<?php echo $post["liked"] ? "active" : ""; ?>">
+
+                                            <i class="fa-solid fa-heart"></i>
+
+                                            <?php echo $post["total_likes"]; ?>
+
+                                        </button>
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                <?php } ?>
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 
 </html>

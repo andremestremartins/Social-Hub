@@ -10,12 +10,8 @@ if (!isset($_SESSION["user_id"])) {
 
 $pesquisa = trim($_POST["pesquisa"]);
 
-$sql = "SELECT id FROM users WHERE username = ? LIMIT 1";
-
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, "s", $pesquisa);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
+$sql = "SELECT id FROM users WHERE username = '$pesquisa' LIMIT 1";
+$result = mysqli_query($conn, $sql);
 
 if ($user = mysqli_fetch_assoc($result)) {
     header("Location: ../profile.php?id=" . $user["id"]);

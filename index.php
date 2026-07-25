@@ -2,37 +2,73 @@
 
 require_once "includes/auth.php";
 require_once "config/database.php";
+
 $user_id = $_SESSION["user_id"];
 
 $sql = "
-    SELECT posts.*, users.username
-    FROM posts
+SELECT
+    posts.*,
+    users.username,
 
-    INNER JOIN users
-    ON posts.user_id = users.id
+    COUNT(DISTINCT likes.id) AS total_likes,
+    COUNT(DISTINCT comments.id) AS total_comments,
 
-    INNER JOIN followers
-    ON followers.following_id = users.id
+    EXISTS(
+        SELECT 1
+        FROM likes l2
+        WHERE l2.post_id = posts.id
+        AND l2.user_id = '$user_id'
+    ) AS liked
 
-    WHERE followers.follower_id = '$user_id'
+FROM posts
 
-    ORDER BY posts.created_at DESC
-    ";
+INNER JOIN users
+ON posts.user_id = users.id
+
+INNER JOIN followers
+ON followers.following_id = users.id
+
+LEFT JOIN likes
+ON likes.post_id = posts.id
+
+LEFT JOIN comments
+ON comments.post_id = posts.id
+
+WHERE followers.follower_id = '$user_id'
+
+GROUP BY posts.id
+
+ORDER BY posts.created_at DESC
+";
 
 $query = mysqli_query($conn, $sql);
+
+$sqlPosts = "
+SELECT *
+FROM posts
+WHERE user_id = '$user_id'
+";
+
+$totalPosts = mysqli_num_rows(mysqli_query($conn, $sqlPosts));
+
+$sqlSeguidores = "
+SELECT *
+FROM followers
+WHERE following_id = '$user_id'
+";
+
+$seguidores = mysqli_num_rows(mysqli_query($conn, $sqlSeguidores));
+
+$sqlSeguindo = "
+SELECT *
+FROM followers
+WHERE follower_id = '$user_id'
+";
+
+$seguindo = mysqli_num_rows(mysqli_query($conn, $sqlSeguindo));
+
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialHub</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-
-<body>
+<?php $pageTitle = "SocialHub"; require_once "includes/html.php"; ?>
     <div class="home"> <?php include "includes/header.php" ?>
         <div class="homecontainer"> <!-- MAIN ZONE - PUBLICACOES -->
             <div class="mainzone">
@@ -50,7 +86,7 @@ $query = mysqli_query($conn, $sql);
 
                     </div>
 
-                    <?php
+                <?php
 
                 } else {
 
@@ -58,7 +94,7 @@ $query = mysqli_query($conn, $sql);
 
                     ?>
 
-                        <div class="post">
+                        <div class="post" onclick="window.location.href='post.php?id=<?php echo $publicacoes['id']; ?>'">
 
                             <div class="post-header">
 
@@ -91,21 +127,33 @@ $query = mysqli_query($conn, $sql);
                                 <?php echo nl2br(htmlspecialchars($publicacoes["content"])); ?>
 
                             </div>
-
-                            <?php if (!empty($publicacoes["image"])) { ?>
-
-                                <img
-                                    src="<?php echo htmlspecialchars($publicacoes["image"]); ?>"
-                                    class="post-image"
-                                    alt="Imagem da publicação">
-
-                            <?php } ?>
-
                             <div class="post-actions">
 
-                                <button>❤️ Like</button>
+                                <a href="api/like.php?id=<?php echo $publicacoes["id"]; ?>"
+                                   onclick="event.stopPropagation();">
 
-                                <button>💬 Comentar</button>
+                                    <button class="<?php echo $publicacoes["liked"] ? "active" : ""; ?>">
+
+                                        <i class="fa-solid fa-heart"></i>
+
+                                        <?php echo $publicacoes["total_likes"]; ?>
+
+                                    </button>
+
+                                </a>
+
+                                <a href="post.php?id=<?php echo $publicacoes["id"]; ?>"
+                                   onclick="event.stopPropagation();">
+
+                                    <button>
+
+                                        <i class="fa-solid fa-comment"></i>
+
+                                        <?php echo $publicacoes["total_comments"]; ?>
+
+                                    </button>
+
+                                </a>
 
                             </div>
 
@@ -133,52 +181,21 @@ $query = mysqli_query($conn, $sql);
                         </div>
                         <div class="profile-stats">
                             <div>
-                                <div class="num">48</div>
+                                <div class="num"><?php echo $totalPosts; ?></div>
                                 <div class="label">Publicações</div>
                             </div>
                             <div>
-                                <div class="num">127</div>
+                                <div class="num"><?php echo $seguidores; ?></div>
                                 <div class="label">Seguidores</div>
                             </div>
                             <div>
-                                <div class="num">89</div>
+                                <div class="num"><?php echo $seguindo; ?></div>
                                 <div class="label">A seguir</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- SUGESTOES -->
-                <div class="rightbar-card">
-                    <h3>Sugestões para seguir</h3>
-                    <div class="suggestion-item">
-                        <div class="suggestion-avatar">D</div>
-                        <div class="suggestion-info">
-                            <div class="name">Diago Almeida</div>
-                            <div class="handle">@diago_almeida</div>
-                        </div> <span class="suggestion-follow">Seguir</span>
-                    </div>
-                    <div class="suggestion-item">
-                        <div class="suggestion-avatar">I</div>
-                        <div class="suggestion-info">
-                            <div class="name">Inês Ribeiro</div>
-                            <div class="handle">@ines_ribeiro</div>
-                        </div> <span class="suggestion-follow">Seguir</span>
-                    </div>
-                    <div class="suggestion-item">
-                        <div class="suggestion-avatar">T</div>
-                        <div class="suggestion-info">
-                            <div class="name">Tiago Pereira</div>
-                            <div class="handle">@tiago_pereira</div>
-                        </div> <span class="suggestion-follow">Seguir</span>
-                    </div>
-                    <div class="suggestion-item">
-                        <div class="suggestion-avatar">L</div>
-                        <div class="suggestion-info">
-                            <div class="name">Leonor Sousa</div>
-                            <div class="handle">@leonor_sousa</div>
-                        </div> <span class="suggestion-follow">Seguir</span>
-                    </div>
-                </div>
+                
 
             </div>
         </div>

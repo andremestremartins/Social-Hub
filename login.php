@@ -6,21 +6,7 @@ if (isset($_SESSION["user_id"])) {
     exit();
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <title>Login</title>
-
-    <link rel="stylesheet" href="assets/css/auth.css">
-
-</head>
-
-<body>
+<?php $pageTitle = "Login"; require_once "includes/html.php"; ?>
 
 <div class="container">
 

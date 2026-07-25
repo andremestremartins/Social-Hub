@@ -14,6 +14,7 @@ $id = (int)$_GET["id"];
 if ($userid == $id) {
     header("Location: ../profile.php?id=$userid");
     exit();
+
 }
 
 $sql = "SELECT * FROM followers
