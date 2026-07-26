@@ -785,3 +785,172 @@ header {
     background: var(--azul-marinho-claro);
 }
 
+/* =============================================
+   CHAT PAGE (chat.php)
+   ============================================= */
+.containerLastUsers {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.emptychatbox {
+    background: #fff;
+    border: 1px solid var(--borda);
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.emptychatbox h1 {
+    color: var(--azul-marinho);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.usercard {
+    background: #fff;
+    border: 1px solid var(--borda);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+.usercard:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.usercard .user-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.usercard .user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--azul-marinho);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.usercard .username {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--azul-marinho);
+}
+
+/* =============================================
+   CHATPAGE (chatpage.php - conversa individual)
+   ============================================= */
+.chatpage {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px 16px 100px 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 80px);
+}
+
+.msgzone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.my-message {
+    align-self: flex-end;
+    background: var(--azul-marinho);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 18px 18px 4px 18px;
+    max-width: 75%;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.their-message {
+    align-self: flex-start;
+    background: var(--bg);
+    color: #1e293b;
+    padding: 12px 18px;
+    border-radius: 18px 18px 18px 4px;
+    max-width: 75%;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* Formulário de envio igual ao .comment-form */
+.chatpage form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 680px;
+    margin: 0 auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid var(--borda);
+    padding: 12px 16px;
+    z-index: 200;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+.chatpage form input[type="text"] {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--borda);
+    border-radius: 24px;
+    font-size: 14px;
+    color: var(--azul-marinho);
+    background: var(--bg);
+    transition: border-color 0.2s ease;
+}
+
+.chatpage form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--azul-marinho);
+    background: #fff;
+}
+
+.chatpage form input[type="text"]::placeholder {
+    color: #b0b8c4;
+}
+
+.chatpage form button {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 24px;
+    background: var(--azul-marinho);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.chatpage form button:hover {
+    background: var(--azul-marinho-claro);
+}
+
+.chat-link{
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}

@@ -108,11 +108,17 @@ $avatar = mb_strtoupper($user["username"], "UTF-8");
                 <?php } else { ?>
 
                     <?php if ($jaSegue) { ?>
-
+                    <div style="display: flex; gap:10px;">
+                        
+                        <a href="chatpage.php?id=<?php echo $user["id"]; ?>" class="editprofile">
+                            Mandar Mensagem
+                        </a>
                         <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
                             Deixar de seguir
                         </a>
 
+                        
+                    </div>
                     <?php } else { ?>
 
                         <a href="api/follow.php?id=<?php echo $id; ?>" class="editprofile">
@@ -120,6 +126,9 @@ $avatar = mb_strtoupper($user["username"], "UTF-8");
                         </a>
 
                     <?php } ?>
+
+
+                        
 
                 <?php } ?>
 
