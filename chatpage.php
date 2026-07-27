@@ -12,36 +12,36 @@ if (!isset($_GET["id"])) {
 $id = (int)$_GET["id"];
 $me = $_SESSION["user_id"];
 
-$sql = "SELECT *
-FROM messages
-WHERE
-(sender_id = $me AND receiver_id = $id)
-OR
-(sender_id = $id AND receiver_id = $me)
-ORDER BY created_at ASC";
+    $sql = "SELECT *
+    FROM messages
+    WHERE
+    (sender_id = $me AND receiver_id = $id)
+    OR
+    (sender_id = $id AND receiver_id = $me)
+    ORDER BY created_at ASC";
 
-$query = mysqli_query($conn, $sql);
-require_once "includes/html.php";
-include "includes/header.php";
+    $query = mysqli_query($conn, $sql);
+    require_once "includes/html.php";
+    include "includes/header.php";
 ?>
 
 <div class="chatpage">
     <div class="msgzone">
         <?php while ($msg = mysqli_fetch_assoc($query)): ?>
 
-            <?php if ($msg["sender_id"] == $me): ?>
+        <?php if ($msg["sender_id"] == $me): ?>
 
-                <div class="my-message">
-                    <?= htmlspecialchars($msg["message"]) ?>
-                </div>
+        <div class="my-message">
+            <?= htmlspecialchars($msg["message"]) ?>
+        </div>
 
-            <?php else: ?>
+        <?php else: ?>
 
-                <div class="their-message">
-                    <?= htmlspecialchars($msg["message"]) ?>
-                </div>
+        <div class="their-message">
+            <?= htmlspecialchars($msg["message"]) ?>
+        </div>
 
-            <?php endif; ?>
+        <?php endif; ?>
 
         <?php endwhile; ?>
     </div>
