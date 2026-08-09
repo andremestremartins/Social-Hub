@@ -3,18 +3,21 @@
 require_once "includes/auth.php";
 require_once "config/database.php";
 
-$id = $_SESSION["user_id"]; 
+/** @var PDO $pdo */
+
+$id = $_SESSION["user_id"];
 
 $sql = "SELECT *
 FROM messages
-WHERE sender_id = $id OR receiver_id = $id
+WHERE sender_id = :sid OR receiver_id = :rid
 ORDER BY created_at DESC";
 
-$query = mysqli_query($conn, $sql);
+$stmt = $pdo->prepare($sql);
+$stmt->execute([":sid" => $id, ":rid" => $id]);
 
 $conversas = [];
 
-while ($row = mysqli_fetch_assoc($query)) {
+foreach ($stmt->fetchAll() as $row) {
 
     if ($row["sender_id"] == $id) {
         $outro = $row["receiver_id"];
@@ -44,9 +47,9 @@ include "includes/header.php";
 
 <?php foreach ($conversas as $userId):
 
-    $sqlUser = "SELECT * FROM users WHERE id = $userId";
-    $resultUser = mysqli_query($conn, $sqlUser);
-    $user = mysqli_fetch_assoc($resultUser);
+    $stmtUser = $pdo->prepare("SELECT * FROM users WHERE id = :id");
+    $stmtUser->execute([":id" => $userId]);
+    $user = $stmtUser->fetch();
 
 ?>
 

@@ -1,7 +1,9 @@
-    <?php
+<?php
 
     require_once "includes/auth.php";
     require_once "config/database.php";
+
+    /** @var PDO $pdo */
 
     if (!isset($_GET["id"])) {
         header("Location: index.php");
@@ -11,68 +13,44 @@
     $id = (int)$_GET["id"];
     $user_id = $_SESSION["user_id"];
 
-    $sqlPost = "SELECT *
-FROM posts
-WHERE id='$id'";
+    $stmtPost = $pdo->prepare("SELECT * FROM posts WHERE id = :id");
+    $stmtPost->execute([":id" => $id]);
+    $post = $stmtPost->fetch();
 
-    $queryPost = mysqli_query($conn, $sqlPost);
-
-    if (mysqli_num_rows($queryPost) == 0) {
+    if (!$post) {
         header("Location: index.php");
         exit();
     }
 
-    $post = mysqli_fetch_assoc($queryPost);
-
-    $sqlUser = "SELECT *
-FROM users
-WHERE id='" . $post["user_id"] . "'";
-
-    $queryUser = mysqli_query($conn, $sqlUser);
-
-    $user = mysqli_fetch_assoc($queryUser);
+    $stmtUser = $pdo->prepare("SELECT * FROM users WHERE id = :user_id");
+    $stmtUser->execute([":user_id" => $post["user_id"]]);
+    $user = $stmtUser->fetch();
 
     $post["username"] = $user["username"];
 
-    $sqlLikes = "SELECT *
-FROM likes
-WHERE post_id='$id'";
+    $stmtLikes = $pdo->prepare("SELECT COUNT(*) AS total FROM likes WHERE post_id = :post_id");
+    $stmtLikes->execute([":post_id" => $id]);
+    $total_likes = $stmtLikes->fetch()["total"];
 
-    $queryLikes = mysqli_query($conn, $sqlLikes);
+    $stmtLiked = $pdo->prepare("SELECT COUNT(*) AS total FROM likes WHERE post_id = :post_id AND user_id = :user_id");
+    $stmtLiked->execute([":post_id" => $id, ":user_id" => $user_id]);
+    $liked = $stmtLiked->fetch()["total"] > 0;
 
-    $total_likes = mysqli_num_rows($queryLikes);
-
-    $sqlLiked = "SELECT *
-FROM likes
-WHERE post_id='$id'
-AND user_id='$user_id'";
-
-    $queryLiked = mysqli_query($conn, $sqlLiked);
-
-    $liked = false;
-
-    if (mysqli_num_rows($queryLiked) > 0) {
-        $liked = true;
-    }
-
-    $sqlComments = "SELECT *
-FROM comments
-WHERE post_id='$id'";
-
-    $queryComments = mysqli_query($conn, $sqlComments);
-
-    $total_comments = mysqli_num_rows($queryComments);
+    $stmtComments = $pdo->prepare("SELECT COUNT(*) AS total FROM comments WHERE post_id = :post_id");
+    $stmtComments->execute([":post_id" => $id]);
+    $total_comments = $stmtComments->fetch()["total"];
 
     $sqlComments = "
 SELECT comments.*, users.username
 FROM comments
 INNER JOIN users
 ON comments.user_id = users.id
-WHERE comments.post_id='$id'
+WHERE comments.post_id = :post_id
 ORDER BY comments.created_at DESC
 ";
 
-    $commentsQuery = mysqli_query($conn, $sqlComments);
+    $commentsStmt = $pdo->prepare($sqlComments);
+    $commentsStmt->execute([":post_id" => $id]);
 
     ?>
     <?php require_once "includes/html.php"; ?>
@@ -159,7 +137,7 @@ ORDER BY comments.created_at DESC
         </div>
 
         <div class="comments">
-            <?php while ($comment = mysqli_fetch_assoc($commentsQuery)) { ?>
+            <?php while ($comment = $commentsStmt->fetch()) { ?>
                 <div class="comment">
                     <div class="comment-header">
                         <div class="comment-avatar">

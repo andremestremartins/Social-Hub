@@ -4,6 +4,8 @@
 require_once "includes/auth.php";
 require_once "config/database.php";
 
+/** @var PDO $pdo */
+
 if (!isset($_GET["id"])) {
     header("Location: index.php");
     exit();
@@ -15,19 +17,20 @@ $me = $_SESSION["user_id"];
     $sql = "SELECT *
     FROM messages
     WHERE
-    (sender_id = $me AND receiver_id = $id)
+    (sender_id = :me AND receiver_id = :rid)
     OR
-    (sender_id = $id AND receiver_id = $me)
+    (sender_id = :rid2 AND receiver_id = :me2)
     ORDER BY created_at ASC";
 
-    $query = mysqli_query($conn, $sql);
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([":me" => $me, ":rid" => $id, ":rid2" => $id, ":me2" => $me]);
     require_once "includes/html.php";
     include "includes/header.php";
 ?>
 
 <div class="chatpage">
     <div class="msgzone">
-        <?php while ($msg = mysqli_fetch_assoc($query)): ?>
+        <?php while ($msg = $stmt->fetch()): ?>
 
         <?php if ($msg["sender_id"] == $me): ?>
 

@@ -3,6 +3,8 @@
 require_once "includes/auth.php";
 require_once "config/database.php";
 
+/** @var PDO $pdo */
+
 if (!isset($_GET["id"])) {
     header("Location: index.php");
     exit();
@@ -11,14 +13,13 @@ if (!isset($_GET["id"])) {
 $id = (int)$_GET["id"];
 $user_id = $_SESSION["user_id"];
 
-$sql = "SELECT * FROM users WHERE id='$id'";
-$query = mysqli_query($conn, $sql);
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
+$stmt->execute([":id" => $id]);
+$user = $stmt->fetch();
 
-if (mysqli_num_rows($query) == 0) {
+if (!$user) {
     die("Utilizador não encontrado.");
 }
-
-$user = mysqli_fetch_assoc($query);
 
 $sqlPosts = "
 SELECT
@@ -31,7 +32,7 @@ SELECT
         SELECT 1
         FROM likes l2
         WHERE l2.post_id = posts.id
-        AND l2.user_id = '$user_id'
+        AND l2.user_id = :user_id
     ) AS liked
 
 FROM posts
@@ -42,39 +43,34 @@ ON likes.post_id = posts.id
 LEFT JOIN comments
 ON comments.post_id = posts.id
 
-WHERE posts.user_id = '$id'
+WHERE posts.user_id = :id
 
 GROUP BY posts.id
 
 ORDER BY posts.created_at DESC
 ";
 
-$posts = mysqli_query($conn, $sqlPosts);
+$stmtPosts = $pdo->prepare($sqlPosts);
+$stmtPosts->execute([":user_id" => $user_id, ":id" => $id]);
+$posts = $stmtPosts->fetchAll();
 
-$totalPosts = mysqli_num_rows($posts);
+$totalPosts = count($posts);
 
-$sqlSeguidores = "SELECT *
-FROM followers
-WHERE following_id='$id'";
+$stmtSeguidores = $pdo->prepare("SELECT COUNT(*) AS total FROM followers WHERE following_id = :id");
+$stmtSeguidores->execute([":id" => $id]);
+$seguidores = $stmtSeguidores->fetch()["total"];
 
-$seguidores = mysqli_num_rows(mysqli_query($conn, $sqlSeguidores));
+$stmtSeguindo = $pdo->prepare("SELECT COUNT(*) AS total FROM followers WHERE follower_id = :id");
+$stmtSeguindo->execute([":id" => $id]);
+$seguindo = $stmtSeguindo->fetch()["total"];
 
-$sqlSeguindo = "SELECT *
-FROM followers
-WHERE follower_id='$id'";
-
-$seguindo = mysqli_num_rows(mysqli_query($conn, $sqlSeguindo));
+$jaSegue = false;
 
 if ($user_id != $id) {
 
-    $sql = "SELECT *
-            FROM followers
-            WHERE follower_id='$user_id'
-            AND following_id='$id'";
-
-    $resultado = mysqli_query($conn, $sql);
-
-    $jaSegue = mysqli_num_rows($resultado) > 0;
+    $stmtSegue = $pdo->prepare("SELECT id FROM followers WHERE follower_id = :user_id AND following_id = :id");
+    $stmtSegue->execute([":user_id" => $user_id, ":id" => $id]);
+    $jaSegue = $stmtSegue->fetch() !== false;
 }
 
 $avatar = mb_strtoupper($user["username"], "UTF-8");
@@ -179,7 +175,7 @@ $avatar = mb_strtoupper($user["username"], "UTF-8");
 
             <?php } ?>
 
-            <?php while ($post = mysqli_fetch_assoc($posts)) { ?>
+            <?php foreach ($posts as $post) { ?>
 
 
                         <div class="postcard" onclick="window.location.href='post.php?id=<?php echo $post['id']; ?>'">

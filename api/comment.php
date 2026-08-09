@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../config/database.php';
 
+/** @var PDO $pdo */
+
 if (!isset($_POST["post_id"]) || !isset($_POST["content"])) {
     header("Location: ../index.php");
     exit();
@@ -17,14 +19,15 @@ if (empty($content)) {
     exit();
 }
 
-$content = mysqli_real_escape_string($conn, $content);
+$stmt = $pdo->prepare("INSERT INTO comments (post_id, user_id, content) VALUES (:post_id, :user_id, :content)");
 
-$sql = "INSERT INTO comments (post_id, user_id, content) VALUES ('$post_id', '$user_id', '$content')";
-
-if (mysqli_query($conn, $sql)) {
+if ($stmt->execute([
+    ":post_id" => $post_id,
+    ":user_id" => $user_id,
+    ":content" => $content,
+])) {
     header("Location: ../post.php?id=" . $post_id);
     exit();
 } else {
     echo "Erro ao adicionar comentário.";
 }
-

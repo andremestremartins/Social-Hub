@@ -3,6 +3,7 @@
 require_once "../config/database.php";
 require_once "../config/session.php";
 
+/** @var PDO $pdo */
 
 if ($_SERVER["REQUEST_METHOD"] != "POST") {
     header("Location: ../login.php");
@@ -12,27 +13,22 @@ if ($_SERVER["REQUEST_METHOD"] != "POST") {
 $username = trim($_POST["username"]);
 $password = $_POST["password"];
 
-$sql = "SELECT * FROM users WHERE username = '$username'";
-$result = mysqli_query($conn, $sql);
+$stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+$stmt->execute([":username" => $username]);
+$user = $stmt->fetch();
 
-if (mysqli_num_rows($result) == 1) {
+if ($user && password_verify($password, $user["password"])) {
 
-    $user = mysqli_fetch_assoc($result);
+    $_SESSION["user_id"] = $user["id"];
+    $_SESSION["username"] = $user["username"];
+    $_SESSION["nome"] = $user["nome"];
 
-    if (password_verify($password, $user["password"])) {
+    header("Location: ../index.php");
+    exit();
 
-        $_SESSION["user_id"] = $user["id"];
-        $_SESSION["username"] = $user["username"];
-        $_SESSION["nome"] = $user["nome"];
-        
-        header("Location: ../index.php");
-        exit();
+} elseif ($user) {
 
-    } else {
-
-        die("Password incorreta.");
-
-    }
+    die("Password incorreta.");
 
 } else {
 

@@ -3,6 +3,8 @@
 require_once "includes/auth.php";
 require_once "config/database.php";
 
+/** @var PDO $pdo */
+
 $user_id = $_SESSION["user_id"];
 
 $sql = "
@@ -15,36 +17,26 @@ ON posts.user_id = users.id
 INNER JOIN followers
 ON followers.following_id = users.id
 
-WHERE followers.follower_id='$user_id'
+WHERE followers.follower_id = :user_id
 
 ORDER BY posts.created_at DESC
 ";
 
-$query = mysqli_query($conn, $sql);
+$stmt = $pdo->prepare($sql);
+$stmt->execute([":user_id" => $user_id]);
+$publicacoes_list = $stmt->fetchAll();
 
-$sqlPosts = "
-SELECT *
-FROM posts
-WHERE user_id = '$user_id'
-";
+$stmtPosts = $pdo->prepare("SELECT COUNT(*) AS total FROM posts WHERE user_id = :user_id");
+$stmtPosts->execute([":user_id" => $user_id]);
+$totalPosts = $stmtPosts->fetch()["total"];
 
-$totalPosts = mysqli_num_rows(mysqli_query($conn, $sqlPosts));
+$stmtSeguidores = $pdo->prepare("SELECT COUNT(*) AS total FROM followers WHERE following_id = :user_id");
+$stmtSeguidores->execute([":user_id" => $user_id]);
+$seguidores = $stmtSeguidores->fetch()["total"];
 
-$sqlSeguidores = "
-SELECT *
-FROM followers
-WHERE following_id = '$user_id'
-";
-
-$seguidores = mysqli_num_rows(mysqli_query($conn, $sqlSeguidores));
-
-$sqlSeguindo = "
-SELECT *
-FROM followers
-WHERE follower_id = '$user_id'
-";
-
-$seguindo = mysqli_num_rows(mysqli_query($conn, $sqlSeguindo));
+$stmtSeguindo = $pdo->prepare("SELECT COUNT(*) AS total FROM followers WHERE follower_id = :user_id");
+$stmtSeguindo->execute([":user_id" => $user_id]);
+$seguindo = $stmtSeguindo->fetch()["total"];
 
 ?>
 <?php $pageTitle = "SocialHub";
@@ -53,7 +45,7 @@ require_once "includes/html.php"; ?>
     <div class="homecontainer"> <!-- MAIN ZONE - PUBLICACOES -->
         <div class="mainzone">
             <?php
-            if (mysqli_num_rows($query) == 0) {
+            if (empty($publicacoes_list)) {
             ?>
                 <div class="empty-feed">
                     <h2>Ainda não segues ninguém.</h2>
@@ -61,21 +53,21 @@ require_once "includes/html.php"; ?>
                 </div>
                 <?php
             } else {
-                while ($publicacoes = mysqli_fetch_assoc($query)) {
+                foreach ($publicacoes_list as $publicacoes) {
 
                     $post_id = $publicacoes["id"];
 
-                    $sqlLikes = "SELECT * FROM likes WHERE post_id='$post_id'";
-                    $queryLikes = mysqli_query($conn, $sqlLikes);
-                    $total_likes = mysqli_num_rows($queryLikes);
+                    $stmtLikes = $pdo->prepare("SELECT COUNT(*) AS total FROM likes WHERE post_id = :post_id");
+                    $stmtLikes->execute([":post_id" => $post_id]);
+                    $total_likes = $stmtLikes->fetch()["total"];
 
-                    $sqlLiked = "SELECT * FROM likes WHERE post_id='$post_id' AND user_id='$user_id'";
-                    $queryLiked = mysqli_query($conn, $sqlLiked);
-                    $liked = mysqli_num_rows($queryLiked) > 0;
+                    $stmtLiked = $pdo->prepare("SELECT COUNT(*) AS total FROM likes WHERE post_id = :post_id AND user_id = :user_id");
+                    $stmtLiked->execute([":post_id" => $post_id, ":user_id" => $user_id]);
+                    $liked = $stmtLiked->fetch()["total"] > 0;
 
-                    $sqlComments = "SELECT * FROM comments WHERE post_id='$post_id'";
-                    $queryComments = mysqli_query($conn, $sqlComments);
-                    $total_comments = mysqli_num_rows($queryComments);
+                    $stmtComments = $pdo->prepare("SELECT COUNT(*) AS total FROM comments WHERE post_id = :post_id");
+                    $stmtComments->execute([":post_id" => $post_id]);
+                    $total_comments = $stmtComments->fetch()["total"];
                 ?>
                     <div class="post" onclick="window.location.href='post.php?id=<?php echo $publicacoes['id']; ?>'">
                         <div class="post-header">
